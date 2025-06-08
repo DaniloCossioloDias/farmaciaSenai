@@ -5,12 +5,12 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
+
+//Essa anotação faz com que quando o TomCat for inicializado ele executa automaticamente isso aqui.
 @WebListener
 public class DatabaseInitializer implements ServletContextListener {
 
@@ -21,20 +21,22 @@ public class DatabaseInitializer implements ServletContextListener {
         try {
             Class.forName("org.postgresql.Driver");
 
+            //Conexão foi realizada no docker.
             connection = DriverManager.getConnection(
                     "jdbc:postgresql://localhost:8010/farmacia",
                     "docker",
                     "docker"
             );
 
+            //InputStream é uma classe que lê dados bye por byte.
+            //no caso ele acessa diretamente no resources, não sendo necessário colocar o caminho completo.
             InputStream is = getClass().getClassLoader().getResourceAsStream("db/scripts.sql");
             if (is == null) {
-                System.err.println("Arquivo SQL não encontrado no classpath");
+                System.err.println("Arquivo SQL não encontrado");
                 return;
             }
             String scriptSQL = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-            // Divide os comandos pelo ';'
             String[] comandos = scriptSQL.split(";");
 
             try (Statement stmt = connection.createStatement()) {
